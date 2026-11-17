@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>დედაენა: ასოების ძიება</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#efe3c4;--ink:#2a2117;--card:#fff8e6;--line:#c9b27c;--pri:#2f66a8;--pri-t:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1610;--ink:#f2e8d0;--card:#2a2218;--line:#5a4a30;--pri:#6fa3e0;--pri-t:#10151c}}
+:root[data-theme="dark"]{--bg:#1b1610;--ink:#f2e8d0;--card:#2a2218;--line:#5a4a30;--pri:#6fa3e0;--pri-t:#10151c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans Georgian",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#w{width:min(100vw - 16px,960px,calc((100dvh - 130px)*16/9))}
+#stage{position:relative}
+canvas{width:100%;display:block;border-radius:12px;border:3px solid var(--line);box-sizing:border-box;touch-action:none;background:#000}
+#ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,14,8,.55);border-radius:12px;padding:10px;box-sizing:border-box}
+.c{background:var(--card);color:var(--ink);border:3px solid var(--line);border-radius:16px;padding:clamp(10px,2.6vw,24px);max-width:580px;text-align:center}
+h1{margin:0 0 4px;font-size:clamp(22px,5vw,42px);font-weight:800}
+.ka{margin:4px 0;font-size:clamp(13px,2.5vw,20px);font-weight:500;line-height:1.45}
+.en{margin:4px 0 12px;font-size:clamp(11px,2vw,15px);opacity:.8;line-height:1.4}
+#go{font:inherit;background:var(--pri);color:var(--pri-t);border:0;border-radius:12px;padding:10px 26px;font-size:clamp(15px,2.8vw,21px);font-weight:800;cursor:pointer}
+#go:focus-visible,.b:focus-visible{outline:3px solid #ffd35a;outline-offset:2px}
+#pad{display:flex;justify-content:space-between;margin-top:10px}
+#pad div{display:flex;gap:10px}
+.b{width:clamp(56px,13vw,78px);height:clamp(46px,9vw,58px);border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:24px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.b:active{background:var(--line)}
+</style>
+</head>
+<body>
+<div id="w">
+ <div id="stage"><canvas id="c" aria-label="დედაენა: ასოების ძიება"></canvas>
+  <div id="ov"><div class="c"><h1 id="h"></h1><p class="ka" id="ka"></p><p class="en" id="en"></p><button id="go"></button></div></div></div>
+ <div id="pad"><div><button class="b" id="bl" aria-label="მარცხნივ">◀</button><button class="b" id="br" aria-label="მარჯვნივ">▶</button></div><div><button class="b" id="bj" aria-label="ხტომა">▲</button><button class="b" id="bt" aria-label="ასოს სროლა">ა➤</button></div></div>
+</div>
+<script>
+if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r||0,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
+const $=i=>document.getElementById(i),cv=$('c'),g=cv.getContext('2d'),W=960,H=540,GY=460;cv.width=W;cv.height=H;
+const AL=[...'აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ'];
+const TR='a b g d e v z t i k l m n o p zh r s t u p k gh q sh ch ts dz ts ch kh j h'.split(' ');
+const WD=['დედა','ენა','მზე'],WE=['mother','language','sun'],WS=[0,4,7],SEQ=[...WD.join('')],BW=[...'დედაენა'];
+const GAPS=[[1000,1300],[2100,2400],[3200,3500]],WW=4100;
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0];
+const circ=(x,y,r,c)=>{g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,7);g.fill()};
+const ell=(x,y,a,b,c)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,a,b,0,0,7);g.fill()};
+const rect=(x,y,w,h,c,r=0)=>{g.fillStyle=c;g.beginPath();g.roundRect(x,y,w,h,r);g.fill()};
+const poly=(p,c)=>{g.fillStyle=c;g.beginPath();p.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.closePath();g.fill()};
+const F=(s,w)=>`${w} ${s}px "Noto Sans Georgian",sans-serif`;
+function txt(s,x,y,z,c,w=800){g.font=F(z,w);g.textAlign='center';g.textBaseline='middle';g.fillStyle=c;g.fillText(s,x,y+2)}
+function ol(s,x,y,z,c='#fff',w=800){g.font=F(z,w);g.textAlign='center';g.textBaseline='middle';g.lineWidth=5;g.lineJoin='round';g.strokeStyle='rgba(20,14,8,.8)';g.strokeText(s,x,y);g.fillStyle=c;g.fillText(s,x,y)}
+function tile(ch,x,y,s,bg,fg,ring){rect(x-s/2,y-s/2,s,s,bg,9);if(ring){g.lineWidth=4;g.strokeStyle=ring;g.stroke()}txt(ch,x,y,s*.62,fg)}
+
+let lv=0,run=false,hearts=3,score=0,sc0=0,t=0,inv=0,cd=0,flash=0,nT=0,nS='',cam=0;
+const K={l:0,r:0,j:0,t:0},p={x:100,y:GY,vx:0,vy:0,f:1,on:1};
+let fall=[],crows=[],pr=[],fl=[],ti=0,spawnT=0,crowT=0;
+let items=[],plats=[],open=[0,0,0],boulders=[],wolves=[],bT=4,wi=0;
+let boss={x:790,ft:0},blobs=[],chips=[],sel=0,bk=0,bsT=2;
+const note=s=>{nS=s;nT=1.7},fx=(s,x,y,c='#fff')=>fl.push({s,x,y,c,t:1});
+
+function mk(){const o=[BW[bk]];while(o.length<4){const c=pick(AL);if(!o.includes(c))o.push(c)}return o.sort(()=>Math.random()-.5)}
+function init(n){lv=n;hearts=3;score=sc0=n==0?0:score;t=0;inv=0;cd=0;flash=0;nT=0;fl=[];pr=[];cam=0;Object.assign(p,{x:100,y:GY,vx:0,vy:0,f:1,on:1});
+ if(n==0){fall=[];crows=[];ti=0;spawnT=.3;crowT=4}
+ if(n==1){items=[];plats=[];open=[0,0,0];boulders=[];bT=4;wi=0;wolves=[{x:1700,a:1400,b:2000,d:1,hp:2},{x:3750,a:3600,b:3950,d:1,hp:2}];
+  [250,450,650,850,1450,1650,1850,2550,2750,2950].forEach((x,i)=>{const hi=i%2;items.push({x,y:hi?300:410,ch:SEQ[i],k:i});if(hi)plats.push({x:x-65,y:340,w:130});
+   items.push({x:x+100,y:hi?410:300,ch:pick(AL.filter(c=>c!=SEQ[i])),k:-1});if(!hi)plats.push({x:x+35,y:340,w:130})})}
+ if(n==2){boss={x:790,ft:0};blobs=[];bk=0;bsT=2.2;chips=mk();sel=0}}
+const wrong=()=>{hearts--;flash=.35;fx('✗',p.x-cam,p.y-110,'#ff6b6b');if(hearts<=0)lose()};
+const hurt=()=>{if(inv>0)return;inv=1.3;hearts--;flash=.35;p.vy=-420;p.on=0;fx('−♥',p.x-cam,p.y-110,'#ff6b6b');if(hearts<=0)lose()};
+const thr=()=>lv==0?AL[ti]:lv==1?(SEQ[wi]||'ა'):chips[sel];
+
+const ov=$('ov'),go=$('go');
+function show(h,ka,en,b,cb){run=false;K.l=K.r=K.j=K.t=0;$('h').textContent=h;$('ka').textContent=ka;$('en').textContent=en;go.textContent=b;ov.style.display='flex';go.onclick=()=>{ov.style.display='none';cb()};go.focus()}
+const IN=[
+['დონე 1: სოფლის მდელო','დაიჭირე ასოები ანბანის რიგით.','სიარული: ← → (ან A D). დაიჭირე ჩამოცვენილი ასოები ანბანის რიგით: ა, ბ, გ... არასწორი ასო ერთ გულს ♥ დაგაკარგვინებს.'],
+['დონე 2: მთის ბილიკი','შეაგროვე ასოები და ააგე სიტყვები: დედა, ენა, მზე.','სიარული: ← →, ხტომა: ↑ (ან Space). რიგით მოაგროვე ასოები და ააწყვე სიტყვები: დედა, ენა, მზე. დასრულებულ სიტყვაზე ხიდი ჩამოიშვება. ქვას და მგელს გადაახტი ან მგელს ორჯერ ესროლე ასო (X).'],
+['დონე 3: მელნის მონსტრი','დაამარცხე მონსტრი სიტყვით: დედაენა!','ესროლე მონსტრს: X ან F. ავნებს მხოლოდ სიტყვის მომდევნო ასო (ყვითლად ანათებს). მუქ ლაქას გადაახტი ↑, იისფერი ლაქის ქვემოთ დარჩი.']];
+const intro=()=>show(IN[lv][0],IN[lv][1],IN[lv][2],'დაწყება',()=>run=true);
+function lose(){show('სცადე თავიდან','გული გამოგელია, მაგრამ დონეს თავიდან დაიწყებ.','არაუშავს, სცადე ეს დონე თავიდან!','სცადე თავიდან',()=>{const s=sc0;init(lv);score=sc0=s;run=true})}
+function win(){if(lv<2)show('ყოჩაღ!',lv==0?'სკოლის კარი გაიღო!':'ხიდები ჩაიშვა, გზა ღიაა!','დონე გავლილია! შენი ქულა: '+score,'შემდეგი დონე',()=>{init(lv+1);intro()});
+ else show('ყოჩაღ, მოსწავლევ!','წიგნი დაიხურა. დედაენა შენია!','შენი საბოლოო ქულა: '+score,'თავიდან ვითამაშოთ',()=>{init(0);intro()})}
+
+function upd(dt){
+ t+=dt;inv-=dt;cd-=dt;flash-=dt;nT-=dt;
+ p.vx=(K.r-K.l)*270;if(K.r)p.f=1;if(K.l)p.f=-1;p.x+=p.vx*dt;
+ if(K.j&&p.on){p.vy=-720;p.on=0}
+ p.vy+=1900*dt;const py=p.y;p.y+=p.vy*dt;p.on=0;
+ if(p.y>=GY){p.y=GY;p.vy=0;p.on=1}
+ else if(lv==1&&p.vy>=0)for(const q of plats)if(py<=q.y+1&&p.y>=q.y&&p.x>q.x-8&&p.x<q.x+q.w+8){p.y=q.y;p.vy=0;p.on=1}
+ if(lv==1){GAPS.forEach((q,k)=>{if(!open[k]&&p.x>q[0]-26){p.x=q[0]-26;if(nT<=0)note('ხიდი ასულია: დაასრულე სიტყვა!')}});p.x=Math.max(20,Math.min(WW-20,p.x));cam=Math.max(0,Math.min(WW-W,p.x-380))}
+ else p.x=Math.max(30,Math.min(lv==2?620:W-30,p.x));
+ if(K.t&&cd<=0){cd=.4;pr.push({x:p.x+p.f*26,y:p.y-62,vx:p.f*580,ch:thr()})}
+ fl.forEach(o=>{o.t-=dt;o.y-=40*dt});fl=fl.filter(o=>o.t>0);
+ if(lv==0)u1(dt);else if(lv==1)u2(dt);else u3(dt);
+ pr=pr.filter(o=>!o.dead&&o.x>cam-40&&o.x<cam+W+40)}
+
+function u1(dt){
+ spawnT-=dt;if(spawnT<=0){spawnT=1.05;const has=fall.some(o=>o.ch==AL[ti]);fall.push({x:rnd(60,W-60),y:-30,ch:(!has||Math.random()<.35)?AL[ti]:pick(AL.filter(c=>c!=AL[ti])),vy:rnd(120,170)})}
+ 
+ crows.forEach(c=>{c.x+=c.vx*dt;const dy=p.y-60-c.y;c.y+=Math.sign(dy)*Math.min(Math.abs(dy),95*dt);fall.forEach(o=>{if(Math.abs(c.x-o.x)<40&&Math.abs(c.y-o.y)<32){o.dead=1;fx('✗',o.x,o.y,'#ffd35a')}});if(!c.dead&&inv<=0&&Math.abs(c.x-p.x)<38&&Math.abs(c.y-(p.y-55))<55){c.dead=1;hurt()}});
+ pr.forEach(o=>{o.x+=o.vx*dt;crows.forEach(c=>{if(Math.hypot(c.x-o.x,c.y-o.y)<36){c.dead=1;o.dead=1;score+=5;fx('+5',c.x,c.y,'#7bd389')}})});
+ crows=crows.filter(c=>!c.dead&&c.x>-60);
+ for(const o of fall){o.y+=o.vy*dt;if(!o.dead&&Math.abs(o.x-p.x)<34&&o.y>p.y-100&&o.y<p.y+5){o.dead=1;
+  if(o.ch==AL[ti]){score+=10;ti++;fx('+10',p.x,p.y-110,'#7bd389');if(ti>=33){win();return}}else{wrong();if(!run)return}}}
+ fall=fall.filter(o=>!o.dead&&o.y<GY+20)}
+
+function u2(dt){
+ for(const o of items){if(!o.dead&&Math.abs(o.x-p.x)<30&&p.y-95<o.y+25&&p.y+8>o.y-25){o.dead=1;
+  if(o.k==wi){wi++;score+=10;fx('+10',o.x-cam,o.y-30,'#7bd389');const d=[4,7,10].indexOf(wi);if(d>=0){open[d]=1;note('ხიდი ჩაიშვა!')}}else{wrong();if(!run)return}}}
+ items=items.filter(o=>!o.dead);
+ bT-=dt;if(bT<=0){bT=rnd(5,7);boulders.push({x:cam+W+60,a:0})}
+ boulders.forEach(b=>{b.x-=240*dt;b.a-=dt*7;if(Math.abs(b.x-p.x)<46&&p.y>GY-45&&inv<=0){hurt();b.dead=1}GAPS.forEach((q,k)=>{if(!open[k]&&b.x>q[0]&&b.x<q[1])b.dead=1})});
+ boulders=boulders.filter(b=>!b.dead&&b.x>cam-90);
+ wolves.forEach(w=>{w.x+=w.d*90*dt;if(w.x>w.b)w.d=-1;if(w.x<w.a)w.d=1;if(Math.abs(w.x-p.x)<46&&p.y>GY-52)hurt()});
+ pr.forEach(o=>{o.x+=o.vx*dt;wolves.forEach(w=>{if(Math.abs(w.x-o.x)<42&&Math.abs(o.y-(GY-34))<44){o.dead=1;if(--w.hp<=0){w.dead=1;score+=15;fx('+15',w.x-cam,GY-80,'#7bd389')}}})});
+ wolves=wolves.filter(w=>!w.dead);
+ if(p.x>3880){win()}}
+
+function u3(dt){
+ boss.ft-=dt;bsT-=dt;
+ if(bsT<=0){bsT=Math.max(.9,1.9-bk*.15);const hi=Math.random()<.45;blobs.push({x:720,y:hi?325:438,vx:-(hi?250:270),r:22,hi})}
+ blobs.forEach(b=>{b.x+=b.vx*dt;if(Math.abs(b.x-p.x)<b.r+16&&b.y+b.r>p.y-92&&b.y-b.r<p.y){hurt();b.dead=1}});
+ blobs=blobs.filter(b=>!b.dead&&b.x>-30);
+ pr.forEach(o=>{o.x+=o.vx*dt;if(o.vx>0&&o.x>690&&o.y>150){o.dead=1;
+  if(o.ch==BW[bk]){bk++;score+=20;boss.ft=.35;fx('+20',o.x,o.y,'#7bd389');if(bk>=7){win();return}chips=mk();sel=0}
+  else{bsT=0;fx('✗',o.x,o.y,'#ff6b6b');note('არასწორი ასო!')}}})}
+
+function child(){g.save();g.translate(p.x-cam,p.y);if(inv>0&&(t*18|0)%2)g.globalAlpha=.4;g.scale(p.f,1);
+ const m=(K.l||K.r)&&p.on,s=m?Math.sin(t*16)*9:0,a=p.on?0:4;
+ rect(-11+s*.5-a,-28,9,28,'#3b2f4f',3);rect(2-s*.5+a,-28,9,28,'#3b2f4f',3);
+ rect(-21,-70,12,34,'#7a4a24',4);rect(-13,-76,26,52,'#2f66a8',6);rect(-13,-52,26,6,'#d9a441');
+ circ(0,-90,15,'#f1c79c');rect(-15,-108,30,13,'#2a1d14',6);circ(6,-90,2.5,'#222');
+ if(cd>.22)rect(8,-70,24,8,'#f1c79c',4);g.restore()}
+function crow(c){g.save();g.translate(c.x,c.y);g.scale(-1,1);const w=Math.sin(t*14+c.ph)*14;ell(0,0,22,13,'#1c1c24');poly([[-4,0],[-18,-w-14],[8,-3]],'#33333f');poly([[14,-3],[30,1],[14,4]],'#f2a230');circ(10,-5,3,'#fff');poly([[-20,0],[-38,-4+w/3],[-38,6]],'#1c1c24');g.restore()}
+function wolf(w){g.save();g.translate(w.x-cam,GY);g.scale(w.d,1);const s=Math.sin(t*10)*6;
+ rect(-34,-48,70,32,'#8a8f99',12);poly([[-34,-42],[-58,-56],[-34,-28]],'#7a7f89');rect(26,-66,34,28,'#9a9fa9',10);poly([[54,-56],[80,-44],[54,-40]],'#8a8f99');poly([[30,-64],[34,-80],[44,-66]],'#7a7f89');circ(48,-55,3,'#d62828');
+ [-26,-10,12,28].forEach((a,i)=>rect(a+(i%2?s:-s),-22,8,22,'#7a7f89',3));g.restore()}
+function cow(x){g.save();g.translate(x,GY+10);rect(-46,-64,92,44,'#fdfaf2',16);circ(-14,-50,13,'#4a3728');circ(18,-42,10,'#4a3728');rect(40,-76,32,30,'#fdfaf2',10);rect(58,-60,14,12,'#f2b8b8',5);circ(52,-66,3,'#222');rect(42,-86,8,10,'#4a3728',3);[-36,-18,18,34].forEach(a=>rect(a-4,-22,9,24,'#e8e2d0',2));g.restore()}
+function hen(x){g.save();g.translate(x,GY+10);ell(0,-28,24,18,'#c4622d');poly([[-22,-34],[-40,-54],[-16,-44]],'#8a3d1a');circ(20,-48,10,'#c4622d');poly([[28,-50],[40,-46],[28,-44]],'#f2c230');rect(14,-63,10,6,'#d62828',3);rect(-6,-12,4,14,'#f2c230');rect(6,-12,4,14,'#f2c230');g.restore()}
+function mtn(cx,b,w,h,c){poly([[cx-w/2,b],[cx,b-h],[cx+w/2,b]],c);poly([[cx-w*.12,b-h*.76],[cx,b-h],[cx+w*.12,b-h*.76],[cx+w*.04,b-h*.7],[cx-w*.03,b-h*.78]],'#f4f8fb')}
+
+function bg1(){const s=g.createLinearGradient(0,0,0,GY);s.addColorStop(0,'#8fd0ee');s.addColorStop(1,'#fdf3c8');g.fillStyle=s;g.fillRect(0,0,W,H);circ(850,100,44,'#ffd35a');
+ for(let i=0;i<4;i++){const x=((i*300+t*16)%1300)-170,y=80+i*26;ell(x,y,60,20,'rgba(255,255,255,.85)');ell(x+36,y-10,40,18,'rgba(255,255,255,.85)')}
+ ell(200,GY+30,380,150,'#86b66c');ell(720,GY+40,440,120,'#79ad5e');rect(0,GY,W,H-GY,'#4e8b3a');rect(0,GY,W,12,'#6fb050');
+ poly([[750,330],[845,262],[940,330]],'#9b4a32');rect(765,330,160,130,'#ead7ac');rect(826,390,42,70,ti>=33?'#2a1a0f':'#6b4423',4);rect(785,355,30,30,'#8ecae6',3);rect(878,355,30,30,'#8ecae6',3);rect(805,296,80,24,'#fff8e6',4);txt('სკოლა',845,308,16,'#2a2117');
+ cow(430);hen(620)}
+function bg2(){const s=g.createLinearGradient(0,0,0,GY);s.addColorStop(0,'#bcd9ee');s.addColorStop(1,'#f6ecd4');g.fillStyle=s;g.fillRect(0,0,W,H);
+ for(let i=-1;i<4;i++)mtn(i*420-(cam*.2%420)+200,GY,520,300,'#8aa3bd');for(let i=-1;i<4;i++)mtn(i*380-(cam*.4%380)+100,GY,460,210,'#6b8199');
+ rect(0,GY,W,H-GY,'#7a6e5f');rect(0,GY,W,12,'#6e9a4a');
+ poly([[90-cam,372],[155-cam,310],[220-cam,372]],'#d6b24a');rect(100-cam,370,110,90,'#b08a5a');rect(140-cam,405,30,55,'#5c3a1a',3);
+ GAPS.forEach((q,k)=>{const x=q[0]-cam,w=q[1]-q[0];if(x>W||x+w<0)return;rect(x,GY,w,H-GY,'#3f8fc4');for(let i=0;i<w;i+=40)rect(x+i+((t*30)%40),GY+20+(i%3)*14,22,3,'#9fd0ee',2);
+  if(open[k]){rect(x-4,GY-4,w+8,12,'#8b5a2b',3);for(let xx=x;xx<x+w;xx+=24)rect(xx,GY-4,2,12,'#5c3a1a')}
+  else{g.save();g.translate(x,GY);g.rotate(-1.4);rect(0,-6,140,12,'#8b5a2b');g.restore()}});
+ const fx0=3900-cam,fy=GY-200,R='#e0191f';rect(fx0,fy-6,6,206,'#555');rect(fx0+6,fy,120,80,'#fff');g.lineWidth=2;g.strokeStyle='#9a8a6a';g.stroke();rect(fx0+60,fy,12,80,R);rect(fx0+6,fy+34,120,12,R);[[27,17],[93,17],[27,63],[93,63]].forEach(([a,b])=>{const x=fx0+6+a,y=fy+b;rect(x-11,y-2,22,4,R);rect(x-2,y-11,4,22,R);rect(x-13,y-5,3,10,R);rect(x+10,y-5,3,10,R);rect(x-5,y-13,10,3,R);rect(x-5,y+10,10,3,R)});
+ plats.forEach(q=>{rect(q.x-cam,q.y,q.w,18,'#8d8473',6);rect(q.x-cam,q.y,q.w,7,'#6e9a4a',4)})}
+function bg3(){g.fillStyle='#5a3b22';g.fillRect(0,0,W,H);rect(24,20,912,408,'#1f3d33',8);g.lineWidth=10;g.strokeStyle='#8a5a2e';g.stroke();rect(24,424,912,14,'#8a5a2e');
+ ['ა ბ გ დ ე ვ','ზ თ ი კ ლ მ','ნ ო პ ჟ რ ს'].forEach((s,i)=>txt(s,300,170+i*70,44,'rgba(255,255,255,.14)',500));
+ poly([[30,GY-8],[480,GY-22],[480,H],[30,H]],'#f5ecd2');poly([[480,GY-22],[930,GY-8],[930,H],[480,H]],'#efe4c6');rect(474,GY-22,12,H-GY+22,'#b9a77a');rect(0,H-10,W,10,'#7a3b2a');
+ for(let i=0;i<3;i++){rect(60,GY+14+i*18,380,3,'#d2c39a');rect(520,GY+14+i*18,380,3,'#d2c39a')}}
+
+function ents(){
+ if(lv==0){fall.forEach(o=>tile(o.ch,o.x,o.y,52,'#ffd35a','#2a2117','#b8860b'));crows.forEach(crow)}
+ if(lv==1){items.forEach(o=>{const x=o.x-cam;if(x>-40&&x<W+40)tile(o.ch,x,o.y,50,'#ffd35a','#2a2117','#b8860b')});
+  boulders.forEach(b=>{g.save();g.translate(b.x-cam,GY-34);circ(0,0,34,'#8d8473');g.rotate(b.a);circ(-12,-8,8,'#6f675a');circ(12,10,10,'#6f675a');circ(8,-18,5,'#6f675a');g.restore()});wolves.forEach(wolf)}
+ if(lv==2){const b=boss,x=b.x,y=GY,c=b.ft>0?'#4a649a':'#14213d';
+  ell(x-100,y-20,48,28,c);ell(x+100,y-20,48,28,c);ell(x,y-125,125,135,c);for(let i=0;i<5;i++)ell(x-80+i*40,y-4,13,18+(i%2)*10,c);
+  const dx=Math.max(-8,Math.min(8,(p.x-x)/60));circ(x-45,y-185,26,'#fff');circ(x+25,y-185,26,'#fff');circ(x-45+dx,y-183,11,'#111');circ(x+25+dx,y-183,11,'#111');
+  ell(x-10,y-118,62,32,'#2b0f1c');for(let i=0;i<5;i++)poly([[x-62+i*24,y-140],[x-50+i*24,y-140],[x-56+i*24,y-122]],'#fff');
+  blobs.forEach(o=>{circ(o.x,o.y,o.r,o.hi?'#7b2cbf':'#2d1b4e');circ(o.x-7,o.y-7,6,'rgba(255,255,255,.5)')})}
+ child();
+ pr.forEach(o=>{g.save();g.translate(o.x-cam,o.y);g.rotate(o.x*.04);tile(o.ch,0,0,32,'#fff','#2a2117','#2a2117');g.restore()});
+ if(lv==2)chips.forEach((c,i)=>tile(c,W/2-111+i*74,503,60,'#fff8e6','#2a2117',i==sel?'#ffd35a':'#8a6a3e'));
+ fl.forEach(o=>{g.globalAlpha=Math.min(1,o.t*2);ol(o.s,o.x,o.y,30,o.c);g.globalAlpha=1})}
+
+function hud(){
+ rect(0,0,W,64,'rgba(20,14,8,.6)');
+ for(let i=0;i<3;i++)txt('♥',34+i*40,32,38,i<hearts?'#e63946':'rgba(150,150,150,.5)');
+ txt('ქულა '+score,W-86,32,28,'#fff');
+ if(lv==0){txt('დაიჭირე',W/2-44,32,28,'#fff');tile(AL[ti]||'✓',W/2+62,32,48,'#ffd35a','#2a2117');
+  ol(`დაიჭირე ასო „${AL[ti]||''}“ (${Math.min(ti+1,33)} / 33)`,W/2,84,18,'#fff',500);
+  for(let i=0;i<33;i++)tile(AL[i],W/2-400+i*25,116,22,i<ti?'#7bd389':'rgba(255,255,255,.4)','#2a2117')}
+ if(lv==1){const d=wi<4?0:wi<7?1:2,w=[...WD[d]],n=Math.max(0,Math.min(w.length,wi-WS[d]));
+  w.forEach((c,i)=>tile(c,W/2-(w.length-1)*28+i*56,32,48,i<n?'#7bd389':i==n?'#ffd35a':'rgba(255,255,255,.85)','#2a2117'));
+  ol(`ააწყვე სიტყვა „${WD[d]}“ (${d+1} / 3)`,W/2,84,18,'#fff',500)}
+ if(lv==2){BW.forEach((c,i)=>tile(c,W/2-3*46+i*46,32,40,i<bk?'#7bd389':i==bk?'#ffd35a':'rgba(255,255,255,.85)','#2a2117'));
+  ol('ააწყვე „დედაენა“: მონსტრს ესროლე მომდევნო ასო (X)',W/2,84,18,'#fff',500)}
+ if(nT>0)ol(nS,W/2,lv==0?160:140,28)}
+
+function draw(){g.save();[bg1,bg2,bg3][lv]();ents();hud();if(flash>0){g.fillStyle=`rgba(230,57,70,${flash})`;g.fillRect(0,0,W,H)}g.restore()}
+
+let last=0;function loop(ts){const dt=Math.min((ts-last)/1000||0,.033);last=ts;if(run)upd(dt);draw();requestAnimationFrame(loop)}
+
+const KM={ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ArrowUp:'j',KeyW:'j',Space:'j',KeyX:'t',KeyF:'t'};
+const kk=e=>KM[e.code]||{x:'t',X:'t',f:'t',F:'t',a:'l',A:'l',d:'r',D:'r',w:'j',W:'j'}[e.key];
+addEventListener('blur',()=>{K.l=K.r=K.j=K.t=0});
+addEventListener('keydown',e=>{if(lv==2&&e.key>='1'&&e.key<='4')sel=e.key-1;const k=kk(e);if(k){K[k]=1;if(run)e.preventDefault()}});
+addEventListener('keyup',e=>{const k=kk(e);if(k)K[k]=0});
+[['bl','l'],['br','r'],['bj','j'],['bt','t']].forEach(([id,k])=>{const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();K[k]=1});['pointerup','pointerleave','pointercancel'].forEach(v=>b.addEventListener(v,()=>K[k]=0))});
+cv.addEventListener('pointerdown',e=>{if(lv!=2||!run)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;chips.forEach((c,i)=>{if(Math.abs(x-(W/2-111+i*74))<37&&y>466)sel=i})});
+
+try{document.fonts.load('800 20px "Noto Sans Georgian"','ა')}catch(e){}
+init(0);requestAnimationFrame(loop);
+show('დედაენა','ასოების ძიება: იაკობ გოგებაშვილის „დედაენის“ მოტივებით','სიარული: ← → (ან A D) · ხტომა: ↑ (ან W, Space) · ასოს სროლა: X (ან F). ტელეფონზე გამოიყენე ღილაკები ეკრანის ქვემოთ.','დაწყება',()=>{intro()});
+</script>
+</body>
+</html>
